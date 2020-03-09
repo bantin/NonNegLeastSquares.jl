@@ -48,7 +48,7 @@ function nonneg_lsq(
     elseif gram && !(alg in [:pivot_cache,:fnnls])
         error("Using the Gram interface is only allowed for the nnls, fnnls, and pivot algorithms.")
     end
-
+    print(alg)
     if alg == :nnls
         return nnls(A, B; kwargs...)
     elseif alg == :fnnls
@@ -59,12 +59,17 @@ function nonneg_lsq(
         return pivot_comb(A, B; kwargs...)
     elseif alg == :pivot
         return pivot(A, B; kwargs...)
-    elseif alg == :proj_gradient
-        # Projected gradient is matrix free. The caller should
+    elseif alg == :projected_gradient
+        # Projected gradient is matrix free. The caller can
         # pass functions to compute Ax and A^Tx.
-        Ax_fn = get(kwargs, :Ax)
-        ATx_fn = get(kwargs, :ATx)
-        x_dim = get(kwargs, :x_dim)
+        Ax_fn = get(kwargs, :Ax, nothing)
+        ATx_fn = get(kwargs, :ATx, nothing)
+        x_dim = get(kwargs, :x_dim, nothing)
+        if Ax_fn == nothing || ATx_fn == nothing || x_dim == nothing
+            Ax_fn(x) = A * x
+            ATx_fn(x) = transpose(A) * x
+            x_dim = size(A, 2)
+        end
         return projected_gradient(Ax_fn, ATx_fn, x_dim, B; kwargs...)
     else
         error("Specified algorithm :",alg," not recognized.")

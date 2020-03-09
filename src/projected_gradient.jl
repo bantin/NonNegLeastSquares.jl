@@ -15,9 +15,9 @@ function projected_gradient(Ax_fn::Function,
                             x_dim::Integer,
                             B::AbstractMatrix;
                             alpha=0.1,
-                            beta=0.3,
-                            init_step_size=1,
-                            max_iter=1000,
+                            beta=0.8,
+                            init_step_size=0.1,
+                            max_iter=10000,
                             eps=1e-8,
                             kwargs...)
     function loss(X)
@@ -40,7 +40,7 @@ function projected_gradient(Ax_fn::Function,
         # Convex Optimization (Boyd and Vandenberghe) page 464
         new_loss = loss(X_prime)
         grad_norm = norm(grad) ^ 2
-        while new_loss > loss_cur + alpha * step_size * grad_norm
+        while new_loss > loss_cur - sum(grad .* (X - X_prime)) + 1 / (2 * step_size) * norm(X - X_prime)
             step_size = beta * step_size
             X_prime = max.(0, X - step_size * grad)
             new_loss = loss(X_prime)
@@ -56,5 +56,6 @@ function projected_gradient(Ax_fn::Function,
             break
         end
     end
+    @warn "Tolerance not reached after maximum iterations."
     return X
 end
