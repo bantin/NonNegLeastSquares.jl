@@ -16,6 +16,7 @@ include("pivot.jl")
 include("pivot_comb.jl")
 include("pivot_cache.jl")
 include("admm.jl")
+include("projected_gradient.jl")
 
 ## Common interface to algorithms
 include("interface.jl")

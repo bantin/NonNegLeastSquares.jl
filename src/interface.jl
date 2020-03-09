@@ -59,6 +59,13 @@ function nonneg_lsq(
         return pivot_comb(A, B; kwargs...)
     elseif alg == :pivot
         return pivot(A, B; kwargs...)
+    elseif alg == :proj_gradient
+        # Projected gradient is matrix free. The caller should
+        # pass functions to compute Ax and A^Tx.
+        Ax_fn = get(kwargs, :Ax)
+        ATx_fn = get(kwargs, :ATx)
+        x_dim = get(kwargs, :x_dim)
+        return projected_gradient(Ax_fn, ATx_fn, x_dim, B; kwargs...)
     else
         error("Specified algorithm :",alg," not recognized.")
     end
